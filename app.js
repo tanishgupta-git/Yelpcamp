@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const path = require('path')
@@ -5,7 +6,7 @@ const monogoose = require('mongoose');
 const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 
-monogoose.connect('mongodb+srv://tanish_gupta:dkJtG95GLIKNIgl5@cluster0.grt5j.mongodb.net/yelpcamp?retryWrites=true&w=majority',
+monogoose.connect(process.env.MONGODB_URI,
 {
     useNewUrlParser:true,
     useCreateIndex:true,
