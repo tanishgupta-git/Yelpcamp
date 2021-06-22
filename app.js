@@ -8,8 +8,14 @@ const session = require('express-session');
 const methodOverride = require('method-override');
 const ExpressError = require('./utils/ExpressError');
 const flash  = require('connect-flash');
-const campgrounds = require('./routes/campgrounds');
-const reviews = require('./routes/reviews');
+const passport = require('passport');
+const LocalStrategy = require('passport-local'); 
+const User = require('./models/user');
+
+
+const userRoutes = require('./routes/users');
+const campgroundsRoutes = require('./routes/campgrounds');
+const reviewsRoutes = require('./routes/reviews');
 
 
 
@@ -48,15 +54,26 @@ const sessionConfig = {
 app.use(session(sessionConfig))
 app.use(flash());
 
+
+// passport workflow
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use((req, res, next) => {
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
+    res.locals.currentUser = req.user;
     next();
 })
 
-app.use('/campgrounds', campgrounds)
-app.use('/campgrounds/:id/reviews', reviews)
 
+app.use('/campgrounds', campgroundsRoutes);
+app.use('/campgrounds/:id/reviews', reviewsRoutes);
+app.use('/',userRoutes);
 
 app.get('/', (req, res) => {
     res.render('home')
