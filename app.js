@@ -17,11 +17,14 @@ const User = require('./models/user');
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 
+
+
 const userRoutes = require('./routes/users');
 const campgroundsRoutes = require('./routes/campgrounds');
 const reviewsRoutes = require('./routes/reviews');
 
-
+const MongoDBStore = require('connect-mongodb-session')(session);
+const secret = process.env.SECRET || 'thisshouldbeveryverysecret';
 
 monogoose.connect(process.env.MONGODB_URI,
 {
@@ -46,9 +49,19 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
 app.use(mongoSanitize());
 
+const store = new MongoDBStore({
+    uri: process.env.MONGODB_URI,
+    collection: 'sessions'
+  });
+
+store.on("error",function(e) {
+    console.log("SESSION STORE ERROR",e);
+})
+
 const sessionConfig = {
+ store:store,
  name:'yelpsession',
- secret : 'thisshouldbeveryverysecret',
+ secret : secret,
  resave: false,
  saveUninitialized : true,
  cookie : {
